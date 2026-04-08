@@ -1,4 +1,4 @@
-# Local WiFi File Sharing System
+# student resource sharing system
 
 ## Features
 - File sharing over local network
