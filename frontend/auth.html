@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StudentHub - Authentication</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #312e81 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #f8fafc;
+        }
+
+        .auth-container {
+            width: 100%;
+            max-width: 1000px;
+            padding: 20px;
+            display: flex;
+            gap: 40px;
+            align-items: center;
+        }
+
+        .auth-left {
+            flex: 1;
+            display: none;
+        }
+
+        .auth-left.active {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        .auth-left h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #8b5cf6, #06b6d4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .auth-left p {
+            font-size: 1.1rem;
+            color: #94a3b8;
+            line-height: 1.6;
+        }
+
+        .benefits {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .benefit-item {
+            display: flex;
+            gap: 15px;
+            align-items: flex-start;
+        }
+
+        .benefit-icon {
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .benefit-text h3 {
+            font-size: 1rem;
+            margin-bottom: 5px;
+            color: #f8fafc;
+        }
+
+        .benefit-text p {
+            font-size: 0.9rem;
+            color: #94a3b8;
+            margin: 0;
+        }
+
+        .auth-right {
+            flex: 1;
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .form-container {
+            display: none;
+        }
+
+        .form-container.active {
+            display: block;
+        }
+
+        .form-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: #f8fafc;
+        }
+
+        .form-subtitle {
+            font-size: 0.9rem;
+            color: #94a3b8;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #f8fafc;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            color: #f8fafc;
+            font-size: 1rem;
+            transition: 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #8b5cf6;
+            background: rgba(139, 92, 246, 0.1);
+        }
+
+        .form-group input::placeholder {
+            color: #64748b;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #8b5cf6, #06b6d4);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+            margin-top: 10px;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(139, 92, 246, 0.4);
+        }
+
+        .btn-submit:active {
+            transform: translateY(0);
+        }
+
+        .form-footer {
+            margin-top: 25px;
+            text-align: center;
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+
+        .form-footer a {
+            color: #8b5cf6;
+            cursor: pointer;
+            text-decoration: none;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+
+        .form-footer a:hover {
+            color: #06b6d4;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 10px;
+        }
+
+        .tab-btn {
+            padding: 10px 20px;
+            background: none;
+            border: none;
+            color: #94a3b8;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: 0.3s;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -11px;
+        }
+
+        .tab-btn.active {
+            color: #8b5cf6;
+            border-bottom-color: #8b5cf6;
+        }
+
+        .tab-btn:hover {
+            color: #f8fafc;
+        }
+
+        .toggle-role {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .role-btn {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.05);
+            color: #94a3b8;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.3s;
+            font-weight: 500;
+        }
+
+        .role-btn.active {
+            background: linear-gradient(135deg, #8b5cf6, #06b6d4);
+            color: white;
+            border-color: transparent;
+        }
+
+        @media (max-width: 768px) {
+            .auth-container {
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            .auth-left {
+                display: none !important;
+            }
+
+            .auth-left.active {
+                display: none;
+            }
+
+            .auth-right {
+                width: 100%;
+                max-width: 500px;
+                margin: 0 auto;
+            }
+
+            .auth-left h1 {
+                font-size: 2rem;
+            }
+        }
+
+        .logo {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #8b5cf6, #06b6d4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="auth-container">
+    
+    <!-- Left Side - Marketing -->
+    <div class="auth-left active" id="leftPanel">
+        <div>
+            <div class="logo">🎓 StudentHub</div>
+            <h1>Welcome Back!</h1>
+            <p>Join thousands of students collaborating, learning, and growing together in our community.</p>
+        </div>
+
+        <div class="benefits">
+            <div class="benefit-item">
+                <div class="benefit-icon">📚</div>
+                <div class="benefit-text">
+                    <h3>Share Resources</h3>
+                    <p>Upload and access study materials from classmates</p>
+                </div>
+            </div>
+            <div class="benefit-item">
+                <div class="benefit-icon">💬</div>
+                <div class="benefit-text">
+                    <h3>Group Chat</h3>
+                    <p>Connect with peers through organized chat groups</p>
+                </div>
+            </div>
+            <div class="benefit-item">
+                <div class="benefit-icon">📊</div>
+                <div class="benefit-text">
+                    <h3>Track Progress</h3>
+                    <p>Monitor learning activities and get personalized suggestions</p>
+                </div>
+            </div>
+            <div class="benefit-item">
+                <div class="benefit-icon">⭐</div>
+                <div class="benefit-text">
+                    <h3>Rate & Review</h3>
+                    <p>Help the community by sharing feedback</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Side - Forms -->
+    <div class="auth-right">
+        
+        <!-- Tab Selection -->
+        <div class="tabs">
+            <button class="tab-btn active" onclick="showTab('login-tab')">Login</button>
+            <button class="tab-btn" onclick="showTab('register-tab')">Register</button>
+            <button class="tab-btn" onclick="showTab('forgot-tab')">Forgot Password</button>
+        </div>
+
+        <!-- Login Form -->
+        <div id="login-tab" class="form-container active">
+            <h2 class="form-title">Login</h2>
+            <p class="form-subtitle">Choose your role to continue</p>
+
+            <div class="toggle-role">
+                <button class="role-btn active" onclick="switchLoginRole('student')">Student</button>
+                <button class="role-btn" onclick="switchLoginRole('admin')">Admin</button>
+            </div>
+
+            <!-- Student Login -->
+            <div id="student-login">
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" id="login-email" placeholder="your@email.com">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="login-pass" placeholder="Enter your password">
+                </div>
+                <button class="btn-submit" onclick="handleLogin('student')">Login as Student</button>
+            </div>
+
+            <!-- Admin Login -->
+            <div id="admin-login" style="display: none;">
+                <div class="form-group">
+                    <label>Admin Email</label>
+                    <input type="email" id="admin-email" placeholder="admin@studenthub.com">
+                </div>
+                <div class="form-group">
+                    <label>Admin Password</label>
+                    <input type="password" id="admin-pass" placeholder="Enter admin password">
+                </div>
+                <button class="btn-submit" onclick="handleLogin('admin')">Login as Admin</button>
+            </div>
+
+            <div class="form-footer">
+                Don't have an account? <a onclick="showTab('register-tab')">Register here</a>
+            </div>
+        </div>
+
+        <!-- Register Form -->
+        <div id="register-tab" class="form-container">
+            <h2 class="form-title">Create Account</h2>
+            <p class="form-subtitle">Join our student community</p>
+
+            <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" id="register-name" placeholder="John Doe">
+            </div>
+            <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" id="register-email" placeholder="your@email.com">
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="register-pass" placeholder="At least 6 characters">
+            </div>
+            <div class="form-group">
+                <label>Confirm Password</label>
+                <input type="password" id="register-pass-confirm" placeholder="Confirm your password">
+            </div>
+            <button class="btn-submit" onclick="handleRegister()">Create Account</button>
+
+            <div class="form-footer">
+                Already have an account? <a onclick="showTab('login-tab')">Login here</a>
+            </div>
+        </div>
+
+        <!-- Forgot Password Form -->
+        <div id="forgot-tab" class="form-container">
+            <h2 class="form-title">Reset Password</h2>
+            <p class="form-subtitle">Enter your email to receive reset instructions</p>
+
+            <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" id="forgot-email" placeholder="your@email.com">
+            </div>
+            <button class="btn-submit" onclick="handlePasswordReset()">Send Reset Link</button>
+
+            <div class="form-footer">
+                Remember your password? <a onclick="showTab('login-tab')">Login here</a>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+    const API_BASE = 'http://localhost:5000/api';
+
+    function showTab(tabId) {
+        // Hide all tabs
+        document.querySelectorAll('.form-container').forEach(el => {
+            el.classList.remove('active');
+        });
+        document.querySelectorAll('.tab-btn').forEach(el => {
+            el.classList.remove('active');
+        });
+
+        // Show selected tab
+        document.getElementById(tabId).classList.add('active');
+        event.target.classList.add('active');
+    }
+
+    function switchLoginRole(role) {
+        document.querySelectorAll('.role-btn').forEach(el => {
+            el.classList.remove('active');
+        });
+        event.target.classList.add('active');
+
+        if (role === 'student') {
+            document.getElementById('student-login').style.display = 'block';
+            document.getElementById('admin-login').style.display = 'none';
+        } else {
+            document.getElementById('student-login').style.display = 'none';
+            document.getElementById('admin-login').style.display = 'block';
+        }
+    }
+
+    async function handleRegister() {
+        const name = document.getElementById('register-name').value.trim();
+        const email = document.getElementById('register-email').value.trim();
+        const password = document.getElementById('register-pass').value;
+        const confirmPassword = document.getElementById('register-pass-confirm').value;
+
+        if (!name || !email || !password || !confirmPassword) {
+            alert('Please fill in all fields');
+            return;
+        }
+
+        if (password !== confirmPassword) {
+            alert('Passwords do not match');
+            return;
+        }
+
+        if (password.length < 6) {
+            alert('Password must be at least 6 characters');
+            return;
+        }
+
+        if (!email.includes('@')) {
+            alert('Please enter a valid email');
+            return;
+        }
+
+        try {
+            const response = await fetch(`${API_BASE}/auth/register`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, name, password, role: 'student' })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                alert(data.error || 'Registration failed');
+                return;
+            }
+
+            // Success - Store credentials and redirect
+            localStorage.setItem('token', data.token);
+            localStorage.setItem('user', data.user.name);
+            localStorage.setItem('userId', data.user._id);
+            localStorage.setItem('email', data.user.email);
+            localStorage.setItem('role', 'student');
+
+            alert('Account created successfully!');
+            window.location.href = 'dashboard.html';
+        } catch (error) {
+            alert('Error: ' + error.message);
+        }
+    }
+
+    async function handleLogin(role) {
+        let email, password;
+
+        if (role === 'admin') {
+            email = document.getElementById('admin-email').value.trim();
+            password = document.getElementById('admin-pass').value;
+        } else {
+            email = document.getElementById('login-email').value.trim();
+            password = document.getElementById('login-pass').value;
+        }
+
+        if (!email || !password) {
+            alert('Please fill in all credentials');
+            return;
+        }
+
+        try {
+            const response = await fetch(`${API_BASE}/auth/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                alert(data.error || 'Login failed');
+                return;
+            }
+
+            // Store credentials
+            localStorage.setItem('token', data.token);
+            localStorage.setItem('user', data.user.name);
+            localStorage.setItem('userId', data.user._id);
+            localStorage.setItem('email', data.user.email);
+            localStorage.setItem('role', role);
+
+            alert(`${role.charAt(0).toUpperCase() + role.slice(1)} login successful!`);
+            
+            // Redirect based on role
+            if (role === 'admin') {
+                window.location.href = 'admin_new.html';
+            } else {
+                window.location.href = 'dashboard.html';
+            }
+        } catch (error) {
+            alert('Error: ' + error.message);
+        }
+    }
+
+    function handlePasswordReset() {
+        const email = document.getElementById('forgot-email').value.trim();
+
+        if (!email) {
+            alert('Please enter your email address');
+            return;
+        }
+
+        if (!email.includes('@')) {
+            alert('Please enter a valid email');
+            return;
+        }
+
+        alert('Reset link sent to ' + email + '! Check your email for instructions.');
+        showTab('login-tab');
+        document.getElementById('forgot-email').value = '';
+    }
+
+    // Check if already logged in
+    window.addEventListener('load', () => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            const role = localStorage.getItem('role');
+            if (role === 'admin') {
+                window.location.href = 'admin_new.html';
+            } else {
+                window.location.href = 'dashboard.html';
+            }
+        }
+    });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feedback & Ratings - StudentHub</title>
+    
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- PRO THEME: "LUMINOUS DASHBOARD" (Consistent) --- */
+        :root {
+            --bg-body: #0f172a;
+            --bg-panel: #1e293b;
+            --bg-card: #334155;
+            
+            --primary: #8b5cf6; /* Violet */
+            --primary-glow: rgba(139, 92, 246, 0.5);
+            --accent: #06b6d4; /* Cyan */
+            --warning: #f59e0b; /* Amber for Stars */
+            
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            
+            --glass: rgba(30, 41, 59, 0.7);
+            --border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        * { box-sizing: border-box; outline: none; scrollbar-width: thin; }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden; /* Lock window scroll */
+        }
+
+        #root {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* --- LAYOUT --- */
+        .app-container { 
+            display: flex; 
+            width: 100%; 
+            height: 100%; 
+        }
+
+        /* --- SIDEBAR --- */
+        .sidebar {
+            width: 280px;
+            background: var(--bg-panel);
+            border-right: var(--border);
+            display: flex; flex-direction: column;
+            padding: 25px;
+            flex-shrink: 0;
+            height: 100%;
+            overflow-y: auto;
+        }
+
+        .brand {
+            font-size: 1.5rem; font-weight: 700; 
+            background: linear-gradient(to right, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 40px;
+            flex-shrink: 0;
+        }
+
+        .nav-item {
+            padding: 12px 16px; margin-bottom: 8px;
+            border-radius: 12px; color: var(--text-muted);
+            cursor: pointer; font-weight: 500;
+            transition: 0.3s; display: flex; align-items: center; gap: 12px;
+            text-decoration: none;
+        }
+        .nav-item:hover { background: rgba(255,255,255,0.05); color: white; }
+        .nav-item.active { background: var(--primary); color: white; box-shadow: 0 4px 15px var(--primary-glow); }
+
+        .session-card {
+            margin-top: auto; padding: 15px; 
+            background: rgba(255,255,255,0.05); 
+            border-radius: 12px; border: var(--border);
+            flex-shrink: 0;
+        }
+
+        .user-widget {
+            display: flex; align-items: center; gap: 10px;
+        }
+        .user-avatar { width: 35px; height: 35px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #000; }
+
+        /* --- MAIN AREA --- */
+        .main-content {
+            flex: 1;
+            display: flex; flex-direction: column;
+            overflow: hidden;
+            position: relative;
+            background: radial-gradient(circle at top right, #1e1b4b, transparent);
+            height: 100%;
+        }
+
+        /* Top Header */
+        .header {
+            padding: 20px 40px;
+            display: flex; justify-content: space-between; align-items: center;
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            border-bottom: var(--border);
+            z-index: 10;
+            flex-shrink: 0;
+            height: 80px;
+        }
+        .header h2 { margin: 0; font-size: 1.5rem; }
+
+        /* Content Scroll */
+        .content-scroll {
+            padding: 40px;
+            overflow-y: auto;
+            flex: 1;
+            width: 100%;
+        }
+
+        /* --- RATING CARDS --- */
+        .grid-layout {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 25px;
+        }
+
+        .rating-card {
+            background: var(--bg-panel);
+            border: var(--border);
+            border-radius: 16px;
+            padding: 25px;
+            transition: 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        .rating-card:hover { transform: translateY(-5px); border-color: var(--primary); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+
+        .card-header { display: flex; justify-content: space-between; margin-bottom: 15px; }
+        .resource-type { font-size: 0.75rem; text-transform: uppercase; color: var(--accent); font-weight: 700; letter-spacing: 1px; }
+        .card-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 5px; color: white; }
+        .card-author { font-size: 0.85rem; color: var(--text-muted); }
+
+        /* Stars */
+        .stars { display: flex; gap: 5px; margin: 15px 0; font-size: 1.2rem; cursor: pointer; }
+        .star { color: #475569; transition: 0.2s; }
+        .star.filled { color: var(--warning); text-shadow: 0 0 10px rgba(245, 158, 11, 0.5); }
+        .star:hover { transform: scale(1.2); }
+
+        /* Feedback Input */
+        .feedback-input {
+            width: 100%; background: rgba(0,0,0,0.2); border: var(--border);
+            border-radius: 8px; padding: 10px; color: white;
+            font-family: inherit; margin-bottom: 15px; resize: vertical;
+            min-height: 60px; font-size: 0.9rem;
+        }
+        .feedback-input:focus { border-color: var(--primary); }
+
+        .submit-btn {
+            background: var(--primary); color: white; border: none;
+            padding: 8px 16px; border-radius: 8px; font-weight: 600;
+            cursor: pointer; width: 100%; transition: 0.2s;
+        }
+        .submit-btn:hover { background: #7c3aed; }
+
+        /* --- ADMIN ANALYTICS PANEL --- */
+        .analytics-panel {
+            background: linear-gradient(135deg, rgba(6, 182, 212, 0.1), rgba(139, 92, 246, 0.1));
+            border: 1px solid var(--accent);
+            border-radius: 16px; padding: 30px; margin-bottom: 40px;
+        }
+        .stats-row { display: flex; gap: 30px; margin-top: 20px; }
+        .stat-item { text-align: center; flex: 1; background: var(--bg-body); padding: 15px; border-radius: 12px; border: var(--border); }
+        .stat-num { font-size: 1.8rem; font-weight: 700; color: white; }
+        .stat-desc { font-size: 0.85rem; color: var(--text-muted); }
+
+        /* Tabs */
+        .tabs { display: flex; gap: 15px; margin-bottom: 25px; }
+        .tab {
+            padding: 8px 20px; border-radius: 20px;
+            background: var(--bg-panel); border: var(--border);
+            color: var(--text-muted); cursor: pointer; transition: 0.2s;
+        }
+        .tab.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useMemo } = React;
+        const API_BASE = 'http://localhost:5000/api';
+
+        const getToken = () => localStorage.getItem('token');
+
+        const App = () => {
+            const [user, setUser] = useState(() => localStorage.getItem('user') || localStorage.getItem('username') || 'Student');
+            const [role, setRole] = useState("student");
+            const [items, setItems] = useState([]);
+            const [timeSpent, setTimeSpent] = useState(0);
+            const [activeTab, setActiveTab] = useState("documents");
+            const [loading, setLoading] = useState(true);
+            const [error, setError] = useState(null);
+
+            // Load User & Timer
+            useEffect(() => {
+                const savedUser = localStorage.getItem('user') || "Student";
+                setUser(savedUser);
+                const savedRole = localStorage.getItem('role') || 'student';
+                setRole(savedRole);
+
+                const savedTime = sessionStorage.getItem('timeSpent');
+                if(savedTime) setTimeSpent(parseInt(savedTime));
+
+                const timer = setInterval(() => {
+                    setTimeSpent(prev => {
+                        const newVal = prev + 1;
+                        sessionStorage.setItem('timeSpent', newVal);
+                        return newVal;
+                    });
+                }, 1000);
+
+                return () => clearInterval(timer);
+            }, []);
+
+            // Load Documents from API
+            useEffect(() => {
+                const loadDocuments = async () => {
+                    try {
+                        setLoading(true);
+                        setError(null);
+                        const response = await fetch(`${API_BASE}/documents`, {
+                            headers: {
+                                'Authorization': `Bearer ${getToken()}`
+                            }
+                        });
+
+                        if (!response.ok) throw new Error('Failed to load documents');
+                        
+                        const docs = await response.json();
+                        const formattedDocs = docs.map((doc, index) => ({
+                            id: doc._id || index,
+                            title: doc.name,
+                            author: doc.uploaderName,
+                            type: 'Document',
+                            rating: 0,
+                            feedback: ""
+                        }));
+                        
+                        setItems(formattedDocs);
+                    } catch (err) {
+                        setError('Unable to load documents. Using demo data.');
+                        // Fallback to demo data
+                        setItems([
+                            { id: 1, title: "Data Structures Notes", author: "Admin", type: "Document", rating: 0, feedback: "" },
+                            { id: 2, title: "Physics Lab Manual", author: "Teacher", type: "Document", rating: 0, feedback: "" },
+                            { id: 3, title: "Project Team Alpha", author: "You", type: "Group", rating: 0, feedback: "" },
+                            { id: 4, title: "Chemistry Assignment 1", author: "John Doe", type: "Document", rating: 0, feedback: "" }
+                        ]);
+                    } finally {
+                        setLoading(false);
+                    }
+                };
+
+                loadDocuments();
+            }, []);
+
+            // System Stats - Placeholder
+            const SYSTEM_STATS = {
+                avgRating: 4.2,
+                totalReviews: 128,
+                flags: 3,
+                topContent: "Data Structures Notes"
+            };
+
+            // Format Time
+            const formatTime = (totalSeconds) => {
+                const h = Math.floor(totalSeconds / 3600);
+                const m = Math.floor((totalSeconds - h * 3600) / 60);
+                const s = totalSeconds - h * 3600 - m * 60;
+                return `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+            };
+
+            // Handle Star Click
+            const handleRate = (id, rating) => {
+                setItems(prev => prev.map(item => item.id === id ? { ...item, rating } : item));
+            };
+
+            // Handle Text Input
+            const handleFeedback = (id, text) => {
+                setItems(prev => prev.map(item => item.id === id ? { ...item, feedback: text } : item));
+            };
+
+            // Submit Action
+            const handleSubmit = async (id) => {
+                const item = items.find(i => i.id === id);
+                if(item.rating === 0) {
+                    alert("Please select a star rating first.");
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`${API_BASE}/feedback`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            Authorization: `Bearer ${getToken()}`
+                        },
+                        body: JSON.stringify({
+                            resourceId: id,
+                            resourceType: item.type,
+                            rating: item.rating,
+                            feedback: item.feedback
+                        })
+                    });
+
+                    if (!response.ok) throw new Error('Feedback submission failed');
+
+                    alert(`Thank you! Rating (${item.rating} Stars) submitted for "${item.title}".`);
+                    setItems(prev => prev.map(i => i.id === id ? { ...i, rating: 0, feedback: "" } : i));
+                } catch (error) {
+                    alert('Error: ' + error.message);
+                }
+            };
+
+            // Filter logic
+            const filteredItems = useMemo(() => {
+                if(activeTab === 'documents') return items.filter(i => i.type === 'Document');
+                if(activeTab === 'groups') return items.filter(i => i.type === 'Group');
+                return [];
+            }, [items, activeTab]);
+
+            // Logout
+            const handleLogout = () => {
+                sessionStorage.clear();
+                window.location.href = 'auth.html';
+            };
+
+            return (
+                <div className="app-container">
+                    
+                    {/* SIDEBAR */}
+                    <div className="sidebar">
+                        <div className="brand">StudentHub</div>
+                        <div className="user-widget" style={{display:'flex', alignItems:'center', gap:'12px', margin:'12px 0'}}>
+                            <div className="user-avatar" style={{width:40, height:40, borderRadius:8, background:'var(--accent)', display:'flex', alignItems:'center', justifyContent:'center', fontWeight:700, color:'#000'}}>
+                                {user && user.charAt ? user.charAt(0).toUpperCase() : 'U'}
+                            </div>
+                            <div style={{display:'flex', flexDirection:'column'}}>
+                                <div style={{fontWeight:700}}>{user}</div>
+                                <a href="profile.html" style={{fontSize:'0.85rem', color:'var(--text-muted)', textDecoration:'none'}}>View Profile</a>
+                            </div>
+                        </div>
+
+                        <a href="dashboard.html" className="nav-item"><span>🏠</span> Dashboard Home</a>
+                        <a href="resources.html" className="nav-item"><span>📄</span> Documents</a>
+                        <a href="chat.html" className="nav-item"><span>💬</span> Group Chats</a>
+                        <a href="learning_hub.html" className="nav-item"><span>🧠</span> Learning Hub</a>
+
+                        <div className="nav-item active"><span>⭐</span> Feedback & Ratings</div>
+
+                        <a href="profile.html" className="nav-item"><span>👤</span> My Profile</a>
+
+                        <div className="nav-item" onClick={handleLogout} style={{marginTop: '20px'}}>
+                            <span>🚪</span> Logout
+                        </div>
+
+                        <div className="session-card">
+                            <small style={{color:'var(--accent)'}}>Current Session</small>
+                            <div style={{fontSize:'1.2rem', fontWeight:'bold', fontFamily:'monospace'}}>
+                                {formatTime(timeSpent)}
+                            </div>
+                            <div className="user-widget" style={{marginTop:'10px'}}>
+                                <div className="user-avatar">{user.charAt(0)}</div>
+                                <div style={{fontSize:'0.9rem'}}>
+                                    <div style={{fontWeight:'bold'}}>{user}</div>
+                                    <div style={{color:'var(--text-muted)', fontSize:'0.8rem'}}>{role === 'admin' ? 'Administrator' : 'Student'}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* MAIN CONTENT */}
+                    <div className="main-content">
+                        
+                        <div className="header">
+                            <div>
+                                <h2>Feedback System</h2>
+                                <div style={{color:'var(--text-muted)'}}>Rate content & improve the platform</div>
+                            </div>
+                        </div>
+
+                        <div className="content-scroll">
+                            
+                            {/* Error Message */}
+                            {error && (
+                                <div style={{background:'rgba(239, 68, 68, 0.2)', border:'1px solid #ef4444', borderRadius:'8px', padding:'15px', marginBottom:'20px', color:'#fca5a5'}}>
+                                    ⚠️ {error}
+                                </div>
+                            )}
+
+                            {/* Loading State */}
+                            {loading && (
+                                <div style={{textAlign:'center', padding:'40px', color:'var(--text-muted)'}}>
+                                    <div style={{fontSize:'2rem', marginBottom:'15px'}}>⏳</div>
+                                    <p>Loading documents...</p>
+                                </div>
+                            )}
+                            {!loading && role === 'admin' && (
+                                <div className="analytics-panel">
+                                    <h3 style={{margin:0, color:'var(--accent)'}}>🧠 Smart Improvement Dashboard</h3>
+                                    <p style={{margin:'5px 0 0', color:'var(--text-muted)'}}>System Health & Quality Metrics</p>
+                                    
+                                    <div className="stats-row">
+                                        <div className="stat-item">
+                                            <div className="stat-num" style={{color:'var(--warning)'}}>{SYSTEM_STATS.avgRating} ★</div>
+                                            <div className="stat-desc">Avg. Content Rating</div>
+                                        </div>
+                                        <div className="stat-item">
+                                            <div className="stat-num">{SYSTEM_STATS.totalReviews}</div>
+                                            <div className="stat-desc">Total Reviews</div>
+                                        </div>
+                                        <div className="stat-item">
+                                            <div className="stat-num" style={{color:'#ef4444'}}>{SYSTEM_STATS.flags}</div>
+                                            <div className="stat-desc">Content Flags</div>
+                                        </div>
+                                        <div className="stat-item">
+                                            <div className="stat-num" style={{fontSize:'1.1rem', lineHeight:'2.2rem'}}>{SYSTEM_STATS.topContent}</div>
+                                            <div className="stat-desc">Highest Rated</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* TABS */}
+                            <div className="tabs">
+                                <div className={`tab ${activeTab === 'documents' ? 'active' : ''}`} onClick={() => setActiveTab('documents')}>Rate Documents</div>
+                                <div className={`tab ${activeTab === 'groups' ? 'active' : ''}`} onClick={() => setActiveTab('groups')}>Group Feedback</div>
+                                <div className={`tab ${activeTab === 'system' ? 'active' : ''}`} onClick={() => setActiveTab('system')}>System Report</div>
+                            </div>
+
+                            {/* CONTENT GRID */}
+                            {activeTab !== 'system' ? (
+                                <div className="grid-layout">
+                                    {filteredItems.map(item => (
+                                        <div className="rating-card" key={item.id}>
+                                            <div className="card-header">
+                                                <div>
+                                                    <div className="resource-type">{item.type}</div>
+                                                    <div className="card-title">{item.title}</div>
+                                                    <div className="card-author">by {item.author}</div>
+                                                </div>
+                                            </div>
+                                            
+                                            {/* Star Rating Logic */}
+                                            <div className="stars">
+                                                {[1, 2, 3, 4, 5].map(star => (
+                                                    <span 
+                                                        key={star} 
+                                                        className={`star ${item.rating >= star ? 'filled' : ''}`}
+                                                        onClick={() => handleRate(item.id, star)}
+                                                    >
+                                                        ★
+                                                    </span>
+                                                ))}
+                                            </div>
+
+                                            <textarea 
+                                                className="feedback-input" 
+                                                placeholder="Write your review here..."
+                                                value={item.feedback}
+                                                onChange={(e) => handleFeedback(item.id, e.target.value)}
+                                            ></textarea>
+
+                                            <button className="submit-btn" onClick={() => handleSubmit(item.id)}>Submit Feedback</button>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                /* SYSTEM FEEDBACK FORM */
+                                <div className="rating-card" style={{maxWidth:'600px', margin:'0 auto'}}>
+                                    <h3 style={{marginTop:0}}>Report Bug or Suggest Feature</h3>
+                                    <p style={{color:'var(--text-muted)', marginBottom:'20px'}}>Help us improve the StudentHub platform.</p>
+                                    
+                                    <label style={{display:'block', marginBottom:'8px', fontSize:'0.9rem', color:'var(--accent)'}}>Category</label>
+                                    <select className="feedback-input" style={{background:'var(--bg-body)'}}>
+                                        <option>Bug Report</option>
+                                        <option>Feature Request</option>
+                                        <option>UI/UX Improvement</option>
+                                        <option>Other</option>
+                                    </select>
+
+                                    <label style={{display:'block', marginBottom:'8px', fontSize:'0.9rem', color:'var(--accent)'}}>Details</label>
+                                    <textarea className="feedback-input" style={{height:'120px'}} placeholder="Describe the issue or idea..."></textarea>
+                                    
+                                    <button className="submit-btn" onClick={() => alert("System feedback submitted. Thank you!")}>Send Report</button>
+                                </div>
+                            )}
+
+                        </div>
+                    </div>
+
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

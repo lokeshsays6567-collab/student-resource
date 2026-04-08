@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Join Group - StudentHub</title>
+    
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-body: #0f172a;
+            --bg-panel: #1e293b;
+            --primary: #8b5cf6;
+            --primary-hover: #7c3aed;
+            --accent: #06b6d4;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --success: #10b981;
+            --error: #ef4444;
+        }
+
+        * { box-sizing: border-box; outline: none; }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            background: radial-gradient(circle at top right, #1e1b4b, transparent), var(--bg-body);
+            color: var(--text-main);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .invite-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .invite-card {
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 50px;
+            max-width: 500px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            animation: slideDown 0.5s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .invite-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .invite-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            background: linear-gradient(to right, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .invite-subtitle {
+            color: var(--text-muted);
+            margin-bottom: 30px;
+            font-size: 0.95rem;
+        }
+
+        .group-info {
+            background: rgba(139, 92, 246, 0.1);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            text-align: left;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+            font-size: 0.9rem;
+        }
+
+        .info-label {
+            color: var(--text-muted);
+        }
+
+        .info-value {
+            font-weight: 600;
+            color: var(--accent);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 14px 28px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), #7c3aed);
+            color: white;
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(139, 92, 246, 0.6);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--accent);
+            border: 1px solid var(--accent);
+        }
+
+        .btn-secondary:hover {
+            background: var(--accent);
+            color: white;
+        }
+
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .spinner {
+            width: 30px;
+            height: 30px;
+            border: 3px solid rgba(139, 92, 246, 0.2);
+            border-top: 3px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .message {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .message.success {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid var(--success);
+            color: var(--success);
+        }
+
+        .message.error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid var(--error);
+            color: var(--error);
+        }
+
+        .message.warning {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid #f59e0b;
+            color: #f59e0b;
+        }
+
+        .password-input {
+            width: 100%;
+            padding: 12px;
+            background: #0f172a;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: white;
+            margin-bottom: 15px;
+            font-size: 1rem;
+        }
+
+        .password-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .password-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 10px rgba(139, 92, 246, 0.3);
+        }
+
+        .timer {
+            color: var(--accent);
+            font-weight: 600;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+        const API_BASE = 'http://localhost:5000/api';
+        const InvitePage = () => {
+            const [groupData, setGroupData] = useState(null);
+            const [loading, setLoading] = useState(true);
+            const [error, setError] = useState("");
+            const [password, setPassword] = useState("");
+            const [joining, setJoining] = useState(false);
+            const [joined, setJoined] = useState(false);
+            const [redirectCountdown, setRedirectCountdown] = useState(3);
+
+            // Get invite code from URL
+            const params = new URLSearchParams(window.location.search);
+            const inviteCode = params.get('code');
+
+            useEffect(() => {
+                if (!inviteCode) {
+                    setError("Invalid invite link");
+                    setLoading(false);
+                    return;
+                }
+                loadGroupData();
+            }, [inviteCode]);
+
+            const loadGroupData = async () => {
+                try {
+                    const res = await fetch(`${API_BASE}/chats/invite/${inviteCode}`, {
+                        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+                    });
+                    const data = await res.json();
+                    
+                    if (!res.ok) {
+                        setError(data.error || "Group not found");
+                        setLoading(false);
+                        return;
+                    }
+
+                    setGroupData(data);
+                    setLoading(false);
+                } catch (err) {
+                    setError("Failed to load group information");
+                    setLoading(false);
+                    console.error(err);
+                }
+            };
+
+            useEffect(() => {
+                if (joined && redirectCountdown > 0) {
+                    const timer = setTimeout(() => {
+                        setRedirectCountdown(redirectCountdown - 1);
+                    }, 1000);
+                    return () => clearTimeout(timer);
+                } else if (joined && redirectCountdown === 0) {
+                    window.location.href = 'chat.html';
+                }
+            }, [joined, redirectCountdown]);
+
+            const handleJoin = async (e) => {
+                e.preventDefault();
+                
+                if (!inviteCode) {
+                    setError("Invalid invite code");
+                    return;
+                }
+
+                if (groupData.type === 'private' && !password) {
+                    setError("Password required for private groups");
+                    return;
+                }
+
+                setJoining(true);
+                setError("");
+
+                try {
+                    const res = await fetch(`${API_BASE}/chats/join-invite`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        },
+                        body: JSON.stringify({
+                            inviteCode,
+                            password: groupData.type === 'private' ? password : undefined
+                        })
+                    });
+
+                    const data = await res.json();
+
+                    if (!res.ok) {
+                        setError(data.error || "Failed to join group");
+                        setJoining(false);
+                        return;
+                    }
+
+                    setJoined(true);
+                } catch (err) {
+                    setError("Error joining group: " + err.message);
+                    setJoining(false);
+                }
+            };
+
+            return (
+                <div className="invite-container">
+                    <div className="invite-card">
+                        {loading ? (
+                            <>
+                                <div className="invite-icon">🔗</div>
+                                <div className="invite-title">Loading Invitation</div>
+                                <div className="loading">
+                                    <div className="spinner"></div>
+                                </div>
+                            </>
+                        ) : joined ? (
+                            <>
+                                <div className="invite-icon">✅</div>
+                                <div className="invite-title">Welcome!</div>
+                                <div className="message success">
+                                    You've successfully joined <strong>{groupData?.name}</strong>
+                                </div>
+                                <div className="timer">
+                                    Redirecting in {redirectCountdown} seconds...
+                                </div>
+                                <a href="chat.html" className="btn btn-primary">
+                                    Go to Chat
+                                </a>
+                            </>
+                        ) : error ? (
+                            <>
+                                <div className="invite-icon">❌</div>
+                                <div className="invite-title">Oops!</div>
+                                <div className="message error">{error}</div>
+                                <a href="chat.html" className="btn btn-secondary">
+                                    Back to Chat
+                                </a>
+                            </>
+                        ) : (
+                            <>
+                                <div className="invite-icon">👥</div>
+                                <div className="invite-title">Join Group</div>
+                                <div className="invite-subtitle">
+                                    You're invited to join a study group
+                                </div>
+
+                                {groupData && (
+                                    <div className="group-info">
+                                        <div className="info-row">
+                                            <span className="info-label">📚 Group Name:</span>
+                                            <span className="info-value">{groupData.name}</span>
+                                        </div>
+                                        <div className="info-row">
+                                            <span className="info-label">👤 Created by:</span>
+                                            <span className="info-value">{groupData.createdBy?.name || 'Unknown'}</span>
+                                        </div>
+                                        <div className="info-row">
+                                            <span className="info-label">🔒 Type:</span>
+                                            <span className="info-value">
+                                                {groupData.type === 'public' ? '📢 Public' : '🔒 Private'}
+                                            </span>
+                                        </div>
+                                        <div className="info-row">
+                                            <span className="info-label">💬 Messages:</span>
+                                            <span className="info-value">{groupData.messages?.length || 0}</span>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {groupData?.type === 'private' && (
+                                    <input
+                                        type="password"
+                                        className="password-input"
+                                        placeholder="Enter group password"
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        onKeyPress={(e) => e.key === 'Enter' && handleJoin(e)}
+                                    />
+                                )}
+
+                                {error && (
+                                    <div className="message warning">{error}</div>
+                                )}
+
+                                <div className="btn-group">
+                                    <button
+                                        className="btn btn-primary"
+                                        onClick={handleJoin}
+                                        disabled={joining}
+                                    >
+                                        {joining ? 'Joining...' : 'Join Group'}
+                                    </button>
+                                    <a href="dashboard.html" className="btn btn-secondary">
+                                        Cancel
+                                    </a>
+                                </div>
+                            </>
+                        )}
+                    </div>
+                </div>
+            );
+        };
+
+        ReactDOM.createRoot(document.getElementById('root')).render(<InvitePage />);
+    </script>
+</body>
+</html>
